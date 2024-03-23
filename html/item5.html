@@ -1,0 +1,792 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>item5</title><meta name="generator" content="MATLAB 9.13"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2024-03-24"><meta name="DC.source" content="item5.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Part 1: Analytical Solution</a></li><li><a href="#3">Auxiliary Functions for the Analytical Solution</a></li><li><a href="#4">Part 2: Numerical Solution</a></li><li><a href="#5">Heat Equation (with variable coefficients) (FTCS)</a></li><li><a href="#7">Heat Equation (with variable coefficients) (BTCS)</a></li><li><a href="#9">Heat Equation (with variable coefficients) (BTCS)</a></li><li><a href="#11">Example: Heat Equation (with variable coefficients) (CNS)</a></li><li><a href="#13">Example: Heat Equation (with variable coefficients) (CNS)</a></li></ul></div><pre class="codeinput"><span class="comment">% item5.m [Hebron, Yenzy]</span>
+ana();
+<span class="comment">% ftcs();</span>
+btcs();
+cns_reduced();
+</pre><h2 id="2">Part 1: Analytical Solution</h2><pre class="codeinput"><span class="keyword">function</span> ana()
+    <span class="keyword">global</span> e;
+    e = exp(1);
+    N = 20;                 <span class="comment">% Adjust N for no. of summation terms considered</span>
+    x = linspace(1,3,50);      <span class="comment">% x in [1,3]</span>
+    t = linspace(0,1,50);     <span class="comment">% t &gt; 0, same size as x</span>
+    usoln = zeros(numel(x),numel(t));
+    <span class="keyword">for</span> j = 1:numel(t)
+        <span class="keyword">for</span> i = 1:numel(x)
+            usoln(i,j) = u(N,x(i),t(j));
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    figure(1);
+    plotter(x,t,usoln');
+    title(<span class="string">"Analytical solution of u(x,t)"</span>)
+    view(2);
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> ret = u(N,x,t)
+    <span class="comment">% Pass onto here values from fine intervals of x and t.</span>
+    <span class="comment">% i.e. x and t are not vectors here, neither is c_n</span>
+    <span class="keyword">global</span> e;
+    ret = 0;
+    <span class="keyword">for</span> n = 1:N
+        ret = ret + c_n(n,1,3)*e^(-k_n(n)*t-t)*x^(-1/2)*sin(w_n(n)*log(x));
+    <span class="keyword">end</span>
+    <span class="comment">% return value is a scalar</span>
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> ret = c_n(n,a,b)
+    <span class="comment">% The xs inside cn_num and cn_den will be vectors wrt CSR 1/3</span>
+    cn_num = @(x) (1-abs(x-2)).*x.^(-1/2).*sin(w_n(n).*log(x));
+    cn_den = @(x) (x.^(-1/2).*sin(w_n(n).*log(x))).^2;
+    ret = Newton_Cotes(a,b,cn_num)/Newton_Cotes(a,b,cn_den);
+    <span class="comment">% return value is a scalar</span>
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> I = Newton_Cotes(a,b,int)
+    <span class="comment">% int pertains to the integrand, pass it onto here</span>
+    <span class="comment">% as a function using @func syntax</span>
+    N = 100;    <span class="comment">% Number of Testpoints</span>
+    <span class="keyword">if</span> (b-a == 0)
+        I=0;
+        <span class="keyword">return</span>;
+    <span class="keyword">end</span>
+    h = (b-a)/(N-1);
+    x = (a:h:b)'; <span class="comment">% test points at h stepsize</span>
+    <span class="comment">% Composite Simpson's 1/3 Rule</span>
+    <span class="comment">% Preemptively apply the constant factors of the terms</span>
+    w = h/3*ones(N,1);
+    w(2:2:end-1) = 4*w(2:2:end-1);
+    w(3:2:end-1) = 2*w(3:2:end-1);
+    f = int(x);     <span class="comment">% solve for y=f(x) values</span>
+    <span class="comment">% Combine applied constant factors with the f(x) values.</span>
+    I = dot(w,f);   <span class="comment">% Return value is a scalar</span>
+<span class="keyword">end</span>
+</pre><h2 id="3">Auxiliary Functions for the Analytical Solution</h2><pre class="codeinput"><span class="keyword">function</span> ret = w_n(n)
+    ret = n*pi/log(3);
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> ret = k_n(n)
+    ret = n^2*pi^2/log(3)^2 + 1/4;
+<span class="keyword">end</span>
+</pre><h2 id="4">Part 2: Numerical Solution</h2><pre class="codeinput"><span class="keyword">function</span> U = ftcs()
+</pre><h2 id="5">Heat Equation (with variable coefficients) (FTCS)</h2><p>x in [x1,xn], t in [t1, tn], D = x^2 %% WARNING: UNSTABLE</p><pre class="codeinput">    x1 = 1; xn = 3; t1 = 0; tn = 1;
+    <span class="comment">% Dirichlet BCs: u(x1,t)=alpha, u(xn,t)=beta;</span>
+    alpha = 0; beta = 0;
+    <span class="comment">% IC: u(x,0)=f(x)</span>
+    f = @(x) 1 - abs(x - 2);
+
+    <span class="comment">% Discretization</span>
+    <span class="comment">% We'll have to abandon plotter for this to work, adjust dx and dt</span>
+    <span class="comment">% independently of each other, U may not be square</span>
+    dx = 0.25000;
+    x = (1:dx:3)';
+    dt = 0.0045;
+    t = (0:dt:1)';
+
+    U = zeros(numel(x),numel(t));      <span class="comment">% initialize U, the zeros are placeholders only</span>
+    U(1,:) = alpha;
+    U(end,:) = beta;
+    U(2:end-1,1) = f(x(2:end-1)); <span class="comment">% set init guess here, use IC f(x)</span>
+    <span class="keyword">for</span> j = 1:numel(t)-1
+        <span class="keyword">for</span> i = 2:numel(x)-1
+            U(i,j+1) = (x(i)^2*dt/dx^2 - x(i)*dt/dx)*U(i-1,j) + <span class="keyword">...</span>
+                (1 - 2*x(i)^2*dt/dx^2 - dt)*U(i,j) + <span class="keyword">...</span>
+                (x(i)^2*dt/dx^2 + x(i)*dt/dx)*U(i+1,j);
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    U;   <span class="comment">% approximate temp gradient</span>
+    figure(2);
+    surf(x,t,U');
+    title(<span class="string">"Numerical solution of u(x,t) using FTCS (UNSTABLE)"</span>)
+    xlabel(<span class="string">'space x'</span>); ylabel(<span class="string">'time t'</span>); zlabel(<span class="string">'heat u(x,t)'</span>)
+    view(2)
+    <span class="comment">% NOTE: TO combine this with btcs, merge btcs backwards to ftcs</span>
+    <span class="comment">% i.e. filter data from btcs to fit ftcs.</span>
+</pre><img vspace="5" hspace="5" src="item5_02.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
+
+<span class="keyword">function</span> U = btcs()
+</pre><h2 id="7">Heat Equation (with variable coefficients) (BTCS)</h2><p>x in [x1,xn], t in [t1, tn], D = x^2</p><pre class="codeinput">    x1 = 1; xn = 3; t1 = 0; tn = 1;
+    <span class="comment">% Dirichlet BCs: u(x1,t)=alpha, u(xn,t)=beta;</span>
+    alpha = 0; beta = 0;
+    <span class="comment">% IC: u(x,0)=f(x)</span>
+
+    <span class="comment">% Discretization</span>
+    n = 30; <span class="comment">% number of points in space and time, total of n*n points</span>
+    <span class="comment">% Note: Prog only works when nx = nt, issue with plotter when nx != nt</span>
+    dx = (xn-x1)/(n-1);            <span class="comment">% stepsize in space</span>
+    x = x1 + (0:dx:(n-1)*dx);      <span class="comment">% steps in space</span>
+    dt = (tn-t1)/(n-1);            <span class="comment">% stepsize in time, no restrictions</span>
+    t = t1 + (0:dt:(n-1)*dt);      <span class="comment">% steps in time</span>
+
+    <span class="comment">% Construct Au = b  % Where b = [alpha, ..., dx^2*u_prev(i), ..., beta]</span>
+    A = zeros(n,n);     <span class="comment">% Becomes almost a constant tridiagonal matrix</span>
+                        <span class="comment">% Can use LU fact because A is constant</span>
+                        <span class="comment">% Zeros are (useful) placeholders</span>
+    <span class="comment">% Boundary Nodes</span>
+    A(1,1) = 1;
+    A(n,n) = 1;
+    <span class="comment">% Internal Nodes (Manual Construction)</span>
+    <span class="keyword">for</span> i = 2:n-1
+        A(i,i-1) = x(i)*dt*dx-x(i)^2*dt;       <span class="comment">% coeff of u_(i-1)^j (left)</span>
+        A(i,i)   = dx^2+2*x(i)^2*dt+dt*dx^2;   <span class="comment">% coeff of u_i^j (center)</span>
+        A(i,i+1) = -x(i)*dt*dx-x(i)^2*dt;      <span class="comment">% coeff of u_(i+1)^j (right)</span>
+    <span class="keyword">end</span>
+
+    <span class="comment">% Construct solution matrix V</span>
+    <span class="comment">% Will dynamically contain:</span>
+    <span class="comment">% Knowns u_i^(j-1) or u_prev and</span>
+    <span class="comment">% Unknowns u_i^j or u (should both be 2D)</span>
+
+    <span class="comment">% Initial guess on u_i^1 (use this instead of given IC)</span>
+    <span class="comment">% Note: Use V as container of both u and u_prev</span>
+    <span class="comment">%  (use V instead of U to avoid confusion with LU fact)</span>
+    V = ones(n,n);
+    <span class="comment">% V = dx^2*V;       %% mult dx^2 once column is next to be used (!!)</span>
+                        <span class="comment">% bcos if we do this here, u_prev will contain</span>
+                        <span class="comment">% updated values already</span>
+    V(1,1:end) = alpha;
+    V(n,1:end) = beta;
+    <span class="keyword">for</span> i = 2:n-1
+        V(i,1) = 1-abs(x(i)-2); <span class="comment">% set init guess here, USE IC</span>
+    <span class="keyword">end</span>
+
+    LU = lufact(A,n);   <span class="comment">% Workable since A is square</span>
+
+    <span class="comment">% No updating, merely iterating through what we already know.</span>
+    <span class="comment">% Don't confuse this too much with linear FDA.</span>
+
+    <span class="comment">% Solve u^j using u^(j-1) (fun to watch contents of V)</span>
+    <span class="keyword">for</span> j = 2:n
+        <span class="comment">%u = A\b;           % for verifying result of LU fact: okay</span>
+
+        <span class="comment">% Solve LUu = u_prev, let Uu = y.</span>
+        <span class="comment">% Forward sub Ly = u_prev. Solve for y.</span>
+        <span class="comment">% Take u_prev from V, then modify to reflect b</span>
+        <span class="comment">%   i.e. mult internal nodes by dx^2</span>
+        u_prev = V(:,j-1);
+        u_prev(2:end-1,1) = dx^2*u_prev(2:end-1,1);     <span class="comment">%% (!!)</span>
+        b = u_prev;         <span class="comment">% rename for consistency</span>
+        y = b;              <span class="comment">% y(1) is correct</span>
+        <span class="keyword">for</span> i=2:n
+            y(i)=y(i)-LU(i,1:i-1)*y(1:i-1);
+        <span class="keyword">end</span>
+
+        <span class="comment">% Backward sub Uu = y. Solve for u.</span>
+        u = y;
+        u(n) = u(n);        <span class="comment">% u(1) is correct (boundary)</span>
+        <span class="keyword">for</span> i=n-1:-1:1
+            u(i) = (u(i) - LU(i,i+1:end)*u(i+1:end))/LU(i,i);
+        <span class="keyword">end</span>
+
+        V(:,j) = u;  <span class="comment">% insert solution to u^j</span>
+    <span class="keyword">end</span>
+
+    U = V;   <span class="comment">% approximate temp gradient</span>
+    <span class="comment">% Use U' for plotter to rectify x and t axes</span>
+    figure(3);
+    plotter(x,t,U');
+    title(<span class="string">"Numerical solution of u(x,t) using BTCS"</span>)
+</pre><img vspace="5" hspace="5" src="item5_01.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
+
+<span class="keyword">function</span> U = btcs_reduced()
+</pre><h2 id="9">Heat Equation (with variable coefficients) (BTCS)</h2><p>x in [x1,xn], t in [t1, tn], D = x^2</p><pre class="codeinput">    x1 = 1; xn = 3; t1 = 0; tn = 1;
+    <span class="comment">% Dirichlet BCs: u(x1,t)=alpha, u(xn,t)=beta;</span>
+    alpha = 0; beta = 0;
+    <span class="comment">% IC: u(x,0)=f(x)</span>
+
+    <span class="comment">% Diff of this with regular BTCS is that we make this match</span>
+    <span class="comment">% the dimensions of the FTCS</span>
+    dx = 0.25000;
+    x = (1:dx:3)';
+    dt = 0.0045;
+    t = (0:dt:1)';
+
+    <span class="comment">% Construct Au = b  % Where b = [alpha, ..., dx^2*u_prev(i), ..., beta]</span>
+    p = numel(x); q = numel(t);
+    A = zeros(p,q);
+    <span class="comment">% Boundary Nodes</span>
+    A(1,1) = 1;
+    A(p,q) = 1;
+    <span class="comment">% Internal Nodes (Manual Construction)</span>
+    <span class="keyword">for</span> i = 2:p-1
+        A(i,i-1) = x(i)*dt*dx-x(i)^2*dt;       <span class="comment">% coeff of u_(i-1)^j (left)</span>
+        A(i,i)   = dx^2+2*x(i)^2*dt+dt*dx^2;   <span class="comment">% coeff of u_i^j (center)</span>
+        A(i,i+1) = -x(i)*dt*dx-x(i)^2*dt;      <span class="comment">% coeff of u_(i+1)^j (right)</span>
+    <span class="keyword">end</span>
+
+    <span class="comment">% Construct solution matrix V</span>
+    <span class="comment">% Will dynamically contain:</span>
+    <span class="comment">% Knowns u_i^(j-1) or u_prev and</span>
+    <span class="comment">% Unknowns u_i^j or u (should both be 2D)</span>
+
+    <span class="comment">% Initial guess on u_i^1 (use this instead of given IC)</span>
+    <span class="comment">% Note: Use V as container of both u and u_prev</span>
+    <span class="comment">%  (use V instead of U to avoid confusion with LU fact)</span>
+    V = ones(p,q);
+    <span class="comment">% V = dx^2*V;       %% mult dx^2 once column is next to be used (!!)</span>
+                        <span class="comment">% bcos if we do this here, u_prev will contain</span>
+                        <span class="comment">% updated values already</span>
+    V(1,1:end) = alpha;
+    V(p,1:end) = beta;
+    <span class="keyword">for</span> i = 2:p-1
+        V(i,1) = 1-abs(x(i)-2); <span class="comment">% set init guess here, USE IC</span>
+    <span class="keyword">end</span>
+
+<span class="comment">%     LU = lufact(A,n);   % Workable since A is square</span>
+
+    <span class="comment">% No updating, merely iterating through what we already know.</span>
+    <span class="comment">% Don't confuse this too much with linear FDA.</span>
+
+    <span class="comment">% Solve u^j using u^(j-1) (fun to watch contents of V)</span>
+    <span class="keyword">for</span> j = 2:q
+        <span class="comment">% Because U is now not square, rendering my LU Fact</span>
+        <span class="comment">% implementation useless, we have taken the liberty</span>
+        <span class="comment">% of using the built in matrix solver</span>
+        u_prev = V(:,j-1);
+        u_prev(2:end-1,1) = dx^2*u_prev(2:end-1,1);     <span class="comment">%% (!!)</span>
+        b = u_prev;         <span class="comment">% rename for consistency</span>
+        u = A\b;
+        V(:,j) = u(1:9);  <span class="comment">% insert solution to u^j</span>
+    <span class="keyword">end</span>
+
+    U = V;   <span class="comment">% approximate temp gradient</span>
+    <span class="comment">% Use U' for plotter to rectify x and t axes</span>
+    figure(4);
+    surf(x,t,U');
+    title(<span class="string">"Numerical solution of u(x,t) using BTCS (REDUCED)"</span>)
+    xlabel(<span class="string">'space x'</span>); ylabel(<span class="string">'time t'</span>); zlabel(<span class="string">'heat u(x,t)'</span>)
+    view(2);
+</pre><img vspace="5" hspace="5" src="item5_03.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
+
+<span class="keyword">function</span> U = cns()
+</pre><h2 id="11">Example: Heat Equation (with variable coefficients) (CNS)</h2><pre class="codeinput">    x1 = 0; xn = 10; t1 = 0; tn = 1; D = 2;
+    <span class="comment">% Dirichlet BCs: u(x1,t)=alpha, u(xn,t)=beta;</span>
+
+    <span class="comment">% Discretization</span>
+    n = 30; <span class="comment">% number of points in space and time, total of n*n points</span>
+    <span class="comment">% Note: Prog only works when nx = nt, issue with plotter when nx != nt</span>
+    dx = (xn-x1)/(n-1);            <span class="comment">% stepsize in space</span>
+    x = x1 + (0:dx:(n-1)*dx);      <span class="comment">% steps in space</span>
+    dt = (tn-t1)/(n-1);            <span class="comment">% stepsize in time, no restrictions</span>
+    t = t1 + (0:dt:(n-1)*dt);      <span class="comment">% steps in time</span>
+
+    <span class="comment">% U1: from FTCS, U2: from BTCS</span>
+    U1 = ftcs();
+    U2 = btcs();
+    U = (U1 + U2) ./ 2;     <span class="comment">% take the average</span>
+
+    U;
+    figure(5);
+    plotter(x,t,U');
+    title(<span class="string">"Numerical solution of u(x,t) using CNS"</span>)
+</pre><pre class="codeinput"><span class="keyword">end</span>
+
+<span class="keyword">function</span> U = cns_reduced()
+</pre><h2 id="13">Example: Heat Equation (with variable coefficients) (CNS)</h2><pre class="codeinput">    x1 = 0; xn = 10; t1 = 0; tn = 1; D = 2;
+    <span class="comment">% Dirichlet BCs: u(x1,t)=alpha, u(xn,t)=beta;</span>
+
+    <span class="comment">% Discretization</span>
+    n = 30; <span class="comment">% number of points in space and time, total of n*n points</span>
+    <span class="comment">% Note: Prog only works when nx = nt, issue with plotter when nx != nt</span>
+    dx = 0.25000;
+    x = (1:dx:3)';
+    dt = 0.0045;
+    t = (0:dt:1)';
+
+    <span class="comment">% U1: from FTCS, U2: from BTCS_REDUCED</span>
+    U1 = ftcs();
+    U2 = btcs_reduced();
+    U = (U1 + U2) ./ 2;     <span class="comment">% take the average</span>
+
+    U;
+    figure(5);
+    surf(x,t,U');
+    title(<span class="string">"Numerical solution of u(x,t) using CNS (REDUCED)"</span>)
+    xlabel(<span class="string">'space x'</span>); ylabel(<span class="string">'time t'</span>); zlabel(<span class="string">'heat u(x,t)'</span>)
+    view(2);
+</pre><img vspace="5" hspace="5" src="item5_04.png" alt=""> <pre class="codeinput"><span class="keyword">end</span>
+
+<span class="keyword">function</span> [LU] = lufact(A,n)
+    LU = A;
+    <span class="comment">% Iterate through columns, pivoting at diag entries</span>
+    <span class="keyword">for</span> j=1:n
+        <span class="comment">% Check for failure point.</span>
+        <span class="keyword">if</span> LU(j,j)==0
+            disp(<span class="string">'Zero pivot encountered'</span>);
+            <span class="keyword">return</span>;
+        <span class="keyword">end</span>
+        <span class="keyword">for</span> i=j+1:n
+            <span class="comment">% Check for numerically zero entries below LU(j,j)</span>
+            <span class="keyword">if</span> abs(LU(i,j)) &lt; 1E-10
+                LU(i,j) = 0;
+                <span class="keyword">continue</span>;
+            <span class="keyword">end</span>
+            <span class="comment">% Get scalar used to annihilate LU(i,j),</span>
+            <span class="comment">% store scalar in corresponding LU entry</span>
+            LU(i,j) = LU(i,j)/LU(j,j);
+            <span class="comment">% ERO3 to annihilate L(i,j), row subtraction assumed</span>
+            LU(i,j+1:end) = LU(i,j+1:end) - LU(i,j)*LU(j,j+1:end);
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> plotter(x,y,z)
+    <span class="comment">% Prep for plotting (Borrowed online)</span>
+    <span class="comment">% https://www.mathworks.com/matlabcentral/answers/387362-how-do-i-</span>
+    <span class="comment">% create-a-3-dimensional-surface-from-x-y-z-points</span>
+    <span class="comment">% figure(fig*2+1)</span>
+    <span class="comment">% stem3(x, y, z)</span>
+    grid <span class="string">on</span>
+
+    xv = linspace(min(x), max(x), 100);
+    yv = linspace(min(y), max(y), 100);
+    [X,Y] = meshgrid(xv, yv);
+    Z = griddata(x,y,z,X,Y);
+
+    <span class="comment">% figure(fig*2+2)</span>
+    surf(X, Y, Z);
+    grid <span class="string">on</span>
+    xlabel(<span class="string">'space x'</span>); ylabel(<span class="string">'time t'</span>); zlabel(<span class="string">'heat u(x,t)'</span>)
+    set(gca, <span class="string">'ZLim'</span>,[0 100])
+    shading <span class="string">interp</span>
+    view(2)
+<span class="keyword">end</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+% item5.m [Hebron, Yenzy]
+ana();
+% ftcs();
+btcs();
+cns_reduced();
+
+%% Part 1: Analytical Solution
+function ana()
+    global e;
+    e = exp(1);
+    N = 20;                 % Adjust N for no. of summation terms considered
+    x = linspace(1,3,50);      % x in [1,3]
+    t = linspace(0,1,50);     % t > 0, same size as x
+    usoln = zeros(numel(x),numel(t));
+    for j = 1:numel(t)
+        for i = 1:numel(x)
+            usoln(i,j) = u(N,x(i),t(j));
+        end
+    end
+    figure(1);
+    plotter(x,t,usoln');
+    title("Analytical solution of u(x,t)")
+    view(2);
+end
+
+function ret = u(N,x,t)
+    % Pass onto here values from fine intervals of x and t.
+    % i.e. x and t are not vectors here, neither is c_n
+    global e;
+    ret = 0;
+    for n = 1:N
+        ret = ret + c_n(n,1,3)*e^(-k_n(n)*t-t)*x^(-1/2)*sin(w_n(n)*log(x));
+    end
+    % return value is a scalar
+end
+
+function ret = c_n(n,a,b)
+    % The xs inside cn_num and cn_den will be vectors wrt CSR 1/3
+    cn_num = @(x) (1-abs(x-2)).*x.^(-1/2).*sin(w_n(n).*log(x));
+    cn_den = @(x) (x.^(-1/2).*sin(w_n(n).*log(x))).^2;
+    ret = Newton_Cotes(a,b,cn_num)/Newton_Cotes(a,b,cn_den);
+    % return value is a scalar
+end
+
+function I = Newton_Cotes(a,b,int)
+    % int pertains to the integrand, pass it onto here
+    % as a function using @func syntax
+    N = 100;    % Number of Testpoints
+    if (b-a == 0)
+        I=0;
+        return;
+    end
+    h = (b-a)/(N-1);
+    x = (a:h:b)'; % test points at h stepsize
+    % Composite Simpson's 1/3 Rule
+    % Preemptively apply the constant factors of the terms
+    w = h/3*ones(N,1);
+    w(2:2:end-1) = 4*w(2:2:end-1);
+    w(3:2:end-1) = 2*w(3:2:end-1);
+    f = int(x);     % solve for y=f(x) values
+    % Combine applied constant factors with the f(x) values.
+    I = dot(w,f);   % Return value is a scalar
+end
+
+%% Auxiliary Functions for the Analytical Solution
+function ret = w_n(n)
+    ret = n*pi/log(3);
+end
+
+function ret = k_n(n)
+    ret = n^2*pi^2/log(3)^2 + 1/4;
+end
+
+
+%% Part 2: Numerical Solution
+function U = ftcs()
+    %% Heat Equation (with variable coefficients) (FTCS)
+    % x in [x1,xn], t in [t1, tn], D = x^2 %% WARNING: UNSTABLE
+    x1 = 1; xn = 3; t1 = 0; tn = 1;
+    % Dirichlet BCs: u(x1,t)=alpha, u(xn,t)=beta;
+    alpha = 0; beta = 0;
+    % IC: u(x,0)=f(x)
+    f = @(x) 1 - abs(x - 2);
+
+    % Discretization
+    % We'll have to abandon plotter for this to work, adjust dx and dt
+    % independently of each other, U may not be square
+    dx = 0.25000;
+    x = (1:dx:3)';
+    dt = 0.0045;
+    t = (0:dt:1)';
+
+    U = zeros(numel(x),numel(t));      % initialize U, the zeros are placeholders only
+    U(1,:) = alpha;
+    U(end,:) = beta;
+    U(2:end-1,1) = f(x(2:end-1)); % set init guess here, use IC f(x)
+    for j = 1:numel(t)-1
+        for i = 2:numel(x)-1
+            U(i,j+1) = (x(i)^2*dt/dx^2 - x(i)*dt/dx)*U(i-1,j) + ...
+                (1 - 2*x(i)^2*dt/dx^2 - dt)*U(i,j) + ...
+                (x(i)^2*dt/dx^2 + x(i)*dt/dx)*U(i+1,j);
+        end
+    end
+
+    U;   % approximate temp gradient
+    figure(2);
+    surf(x,t,U');
+    title("Numerical solution of u(x,t) using FTCS (UNSTABLE)")
+    xlabel('space x'); ylabel('time t'); zlabel('heat u(x,t)')
+    view(2)
+    % NOTE: TO combine this with btcs, merge btcs backwards to ftcs
+    % i.e. filter data from btcs to fit ftcs.
+end
+
+function U = btcs()
+    %% Heat Equation (with variable coefficients) (BTCS)
+    % x in [x1,xn], t in [t1, tn], D = x^2
+    x1 = 1; xn = 3; t1 = 0; tn = 1;
+    % Dirichlet BCs: u(x1,t)=alpha, u(xn,t)=beta;
+    alpha = 0; beta = 0;
+    % IC: u(x,0)=f(x)
+
+    % Discretization
+    n = 30; % number of points in space and time, total of n*n points
+    % Note: Prog only works when nx = nt, issue with plotter when nx != nt
+    dx = (xn-x1)/(n-1);            % stepsize in space
+    x = x1 + (0:dx:(n-1)*dx);      % steps in space
+    dt = (tn-t1)/(n-1);            % stepsize in time, no restrictions
+    t = t1 + (0:dt:(n-1)*dt);      % steps in time
+
+    % Construct Au = b  % Where b = [alpha, ..., dx^2*u_prev(i), ..., beta]
+    A = zeros(n,n);     % Becomes almost a constant tridiagonal matrix
+                        % Can use LU fact because A is constant
+                        % Zeros are (useful) placeholders
+    % Boundary Nodes
+    A(1,1) = 1;
+    A(n,n) = 1;
+    % Internal Nodes (Manual Construction)
+    for i = 2:n-1
+        A(i,i-1) = x(i)*dt*dx-x(i)^2*dt;       % coeff of u_(i-1)^j (left)
+        A(i,i)   = dx^2+2*x(i)^2*dt+dt*dx^2;   % coeff of u_i^j (center)
+        A(i,i+1) = -x(i)*dt*dx-x(i)^2*dt;      % coeff of u_(i+1)^j (right)
+    end
+
+    % Construct solution matrix V
+    % Will dynamically contain:
+    % Knowns u_i^(j-1) or u_prev and
+    % Unknowns u_i^j or u (should both be 2D)
+
+    % Initial guess on u_i^1 (use this instead of given IC)
+    % Note: Use V as container of both u and u_prev
+    %  (use V instead of U to avoid confusion with LU fact)
+    V = ones(n,n);
+    % V = dx^2*V;       %% mult dx^2 once column is next to be used (!!)
+                        % bcos if we do this here, u_prev will contain
+                        % updated values already
+    V(1,1:end) = alpha;
+    V(n,1:end) = beta;
+    for i = 2:n-1
+        V(i,1) = 1-abs(x(i)-2); % set init guess here, USE IC
+    end
+
+    LU = lufact(A,n);   % Workable since A is square
+
+    % No updating, merely iterating through what we already know.
+    % Don't confuse this too much with linear FDA.
+
+    % Solve u^j using u^(j-1) (fun to watch contents of V)
+    for j = 2:n
+        %u = A\b;           % for verifying result of LU fact: okay
+
+        % Solve LUu = u_prev, let Uu = y.
+        % Forward sub Ly = u_prev. Solve for y.
+        % Take u_prev from V, then modify to reflect b
+        %   i.e. mult internal nodes by dx^2
+        u_prev = V(:,j-1);
+        u_prev(2:end-1,1) = dx^2*u_prev(2:end-1,1);     %% (!!)
+        b = u_prev;         % rename for consistency
+        y = b;              % y(1) is correct
+        for i=2:n
+            y(i)=y(i)-LU(i,1:i-1)*y(1:i-1);
+        end
+    
+        % Backward sub Uu = y. Solve for u.
+        u = y;
+        u(n) = u(n);        % u(1) is correct (boundary)
+        for i=n-1:-1:1
+            u(i) = (u(i) - LU(i,i+1:end)*u(i+1:end))/LU(i,i);
+        end
+
+        V(:,j) = u;  % insert solution to u^j
+    end
+    
+    U = V;   % approximate temp gradient
+    % Use U' for plotter to rectify x and t axes
+    figure(3);
+    plotter(x,t,U');
+    title("Numerical solution of u(x,t) using BTCS")
+end
+
+function U = btcs_reduced()
+    %% Heat Equation (with variable coefficients) (BTCS)
+    % x in [x1,xn], t in [t1, tn], D = x^2
+    x1 = 1; xn = 3; t1 = 0; tn = 1;
+    % Dirichlet BCs: u(x1,t)=alpha, u(xn,t)=beta;
+    alpha = 0; beta = 0;
+    % IC: u(x,0)=f(x)
+
+    % Diff of this with regular BTCS is that we make this match
+    % the dimensions of the FTCS
+    dx = 0.25000;
+    x = (1:dx:3)';
+    dt = 0.0045;
+    t = (0:dt:1)';
+
+    % Construct Au = b  % Where b = [alpha, ..., dx^2*u_prev(i), ..., beta]
+    p = numel(x); q = numel(t);
+    A = zeros(p,q);
+    % Boundary Nodes
+    A(1,1) = 1;
+    A(p,q) = 1;
+    % Internal Nodes (Manual Construction)
+    for i = 2:p-1
+        A(i,i-1) = x(i)*dt*dx-x(i)^2*dt;       % coeff of u_(i-1)^j (left)
+        A(i,i)   = dx^2+2*x(i)^2*dt+dt*dx^2;   % coeff of u_i^j (center)
+        A(i,i+1) = -x(i)*dt*dx-x(i)^2*dt;      % coeff of u_(i+1)^j (right)
+    end
+
+    % Construct solution matrix V
+    % Will dynamically contain:
+    % Knowns u_i^(j-1) or u_prev and
+    % Unknowns u_i^j or u (should both be 2D)
+
+    % Initial guess on u_i^1 (use this instead of given IC)
+    % Note: Use V as container of both u and u_prev
+    %  (use V instead of U to avoid confusion with LU fact)
+    V = ones(p,q);
+    % V = dx^2*V;       %% mult dx^2 once column is next to be used (!!)
+                        % bcos if we do this here, u_prev will contain
+                        % updated values already
+    V(1,1:end) = alpha;
+    V(p,1:end) = beta;
+    for i = 2:p-1
+        V(i,1) = 1-abs(x(i)-2); % set init guess here, USE IC
+    end
+
+%     LU = lufact(A,n);   % Workable since A is square
+
+    % No updating, merely iterating through what we already know.
+    % Don't confuse this too much with linear FDA.
+
+    % Solve u^j using u^(j-1) (fun to watch contents of V)
+    for j = 2:q
+        % Because U is now not square, rendering my LU Fact 
+        % implementation useless, we have taken the liberty
+        % of using the built in matrix solver
+        u_prev = V(:,j-1);
+        u_prev(2:end-1,1) = dx^2*u_prev(2:end-1,1);     %% (!!)
+        b = u_prev;         % rename for consistency
+        u = A\b;
+        V(:,j) = u(1:9);  % insert solution to u^j
+    end
+    
+    U = V;   % approximate temp gradient
+    % Use U' for plotter to rectify x and t axes
+    figure(4);
+    surf(x,t,U');
+    title("Numerical solution of u(x,t) using BTCS (REDUCED)")
+    xlabel('space x'); ylabel('time t'); zlabel('heat u(x,t)')
+    view(2);
+end
+
+function U = cns()
+    %% Example: Heat Equation (with variable coefficients) (CNS)
+    x1 = 0; xn = 10; t1 = 0; tn = 1; D = 2;
+    % Dirichlet BCs: u(x1,t)=alpha, u(xn,t)=beta;
+
+    % Discretization
+    n = 30; % number of points in space and time, total of n*n points
+    % Note: Prog only works when nx = nt, issue with plotter when nx != nt
+    dx = (xn-x1)/(n-1);            % stepsize in space
+    x = x1 + (0:dx:(n-1)*dx);      % steps in space
+    dt = (tn-t1)/(n-1);            % stepsize in time, no restrictions
+    t = t1 + (0:dt:(n-1)*dt);      % steps in time
+
+    % U1: from FTCS, U2: from BTCS
+    U1 = ftcs();
+    U2 = btcs();
+    U = (U1 + U2) ./ 2;     % take the average
+
+    U;
+    figure(5);
+    plotter(x,t,U');
+    title("Numerical solution of u(x,t) using CNS")
+end
+
+function U = cns_reduced()
+    %% Example: Heat Equation (with variable coefficients) (CNS)
+    x1 = 0; xn = 10; t1 = 0; tn = 1; D = 2;
+    % Dirichlet BCs: u(x1,t)=alpha, u(xn,t)=beta;
+
+    % Discretization
+    n = 30; % number of points in space and time, total of n*n points
+    % Note: Prog only works when nx = nt, issue with plotter when nx != nt
+    dx = 0.25000;
+    x = (1:dx:3)';
+    dt = 0.0045;
+    t = (0:dt:1)';
+
+    % U1: from FTCS, U2: from BTCS_REDUCED
+    U1 = ftcs();
+    U2 = btcs_reduced();
+    U = (U1 + U2) ./ 2;     % take the average
+
+    U;
+    figure(5);
+    surf(x,t,U');
+    title("Numerical solution of u(x,t) using CNS (REDUCED)")
+    xlabel('space x'); ylabel('time t'); zlabel('heat u(x,t)')
+    view(2);
+end
+
+function [LU] = lufact(A,n)
+    LU = A;
+    % Iterate through columns, pivoting at diag entries
+    for j=1:n
+        % Check for failure point.
+        if LU(j,j)==0
+            disp('Zero pivot encountered');
+            return;
+        end
+        for i=j+1:n
+            % Check for numerically zero entries below LU(j,j)
+            if abs(LU(i,j)) < 1E-10
+                LU(i,j) = 0;
+                continue;
+            end
+            % Get scalar used to annihilate LU(i,j),
+            % store scalar in corresponding LU entry
+            LU(i,j) = LU(i,j)/LU(j,j);
+            % ERO3 to annihilate L(i,j), row subtraction assumed
+            LU(i,j+1:end) = LU(i,j+1:end) - LU(i,j)*LU(j,j+1:end);
+        end
+    end
+end
+
+function plotter(x,y,z)
+    % Prep for plotting (Borrowed online)
+    % https://www.mathworks.com/matlabcentral/answers/387362-how-do-i-
+    % create-a-3-dimensional-surface-from-x-y-z-points
+    % figure(fig*2+1)
+    % stem3(x, y, z)
+    grid on
+    
+    xv = linspace(min(x), max(x), 100);
+    yv = linspace(min(y), max(y), 100);
+    [X,Y] = meshgrid(xv, yv);
+    Z = griddata(x,y,z,X,Y);
+    
+    % figure(fig*2+2)
+    surf(X, Y, Z);
+    grid on
+    xlabel('space x'); ylabel('time t'); zlabel('heat u(x,t)')
+    set(gca, 'ZLim',[0 100])
+    shading interp
+    view(2)
+end
+##### SOURCE END #####
+--></body></html>
